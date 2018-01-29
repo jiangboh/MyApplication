@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 public class RedPacketService extends AccessibilityService {
 
+    static public boolean EnableDebug = false;
     /**
      * 微信几个页面的包名+地址。用于判断在哪个页面
      * LAUCHER-微信聊天界面
@@ -58,35 +59,96 @@ public class RedPacketService extends AccessibilityService {
         return super.onUnbind(intent);
     }
 
+    //@Override
+    public void onAccessibilityEvent111(AccessibilityEvent event) {
+        // TODO Auto-generated method stub
+        //String TAG = "recycle ===> ";
+        int eventType = event.getEventType();
+        String eventText = "";
+        MyPrint( "==============Start====================");
+        switch (eventType) {
+            case AccessibilityEvent.TYPE_VIEW_CLICKED:
+                eventText = "TYPE_VIEW_CLICKED";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_FOCUSED:
+                eventText = "TYPE_VIEW_FOCUSED";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_LONG_CLICKED:
+                eventText = "TYPE_VIEW_LONG_CLICKED";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_SELECTED:
+                eventText = "TYPE_VIEW_SELECTED";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED:
+                eventText = "TYPE_VIEW_TEXT_CHANGED";
+                break;
+            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
+                eventText = "TYPE_WINDOW_STATE_CHANGED";
+                break;
+            case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:
+                eventText = "TYPE_NOTIFICATION_STATE_CHANGED";
+                break;
+            case AccessibilityEvent.TYPE_TOUCH_EXPLORATION_GESTURE_END:
+                eventText = "TYPE_TOUCH_EXPLORATION_GESTURE_END";
+                break;
+            case AccessibilityEvent.TYPE_ANNOUNCEMENT:
+                eventText = "TYPE_ANNOUNCEMENT";
+                break;
+            case AccessibilityEvent.TYPE_TOUCH_EXPLORATION_GESTURE_START:
+                eventText = "TYPE_TOUCH_EXPLORATION_GESTURE_START";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_HOVER_ENTER:
+                eventText = "TYPE_VIEW_HOVER_ENTER";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_HOVER_EXIT:
+                eventText = "TYPE_VIEW_HOVER_EXIT";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_SCROLLED:
+                eventText = "TYPE_VIEW_SCROLLED";
+                break;
+            case AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED:
+                eventText = "TYPE_VIEW_TEXT_SELECTION_CHANGED";
+                break;
+            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
+                eventText = "TYPE_WINDOW_CONTENT_CHANGED";
+                break;
+        }
+        eventText = eventText + ":" + eventType;
+        MyPrint( eventText);
+        MyPrint( "=============END=====================");
+    }
+
+    @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         int eventType = event.getEventType();
 
         //通知栏来信息，判断是否含有微信红包字样，是的话跳转
         if (eventType == AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED)
         {
-            Log.i("==>", "通知栏来消息啦。。。");
+            MyPrint( "通知栏来消息啦。。。");
         }
         else if (eventType == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
-            Log.i("==>", "TYPE_WINDOWS_CHANGED。。。");
+            MyPrint( "TYPE_WINDOWS_CHANGED。。。");
         }
         //界面跳转的监听
         else if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
         {
-            Log.i("==>", "页面换啦。。。");
+            MyPrint( "页面换啦。。。");
             String className = event.getClassName().toString();
 
-            Log.i("==>", "className:" + className);
+            MyPrint( "className:" + className);
             //判断是否是微信聊天界面
             if (LAUCHER.equals(className)) {
                 //获取当前聊天页面的根布局
                 //AccessibilityNodeInfo rootNode = getRootInActiveWindow();
-                Log.i("==>", "开始找红包");
+                MyPrint( "开始找红包");
                 isRedPackWindows = true;
                 //new MyThread().run();
+                //new UpDownThread().run();
             }
             else
             {
-                Log.i("==>", "停止找红包");
+                MyPrint( "停止找红包");
                 isRedPackWindows = false;
             }
 
@@ -104,14 +166,20 @@ public class RedPacketService extends AccessibilityService {
             }
         }
         else if (eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            Log.i("==>", "窗口内容改变啦。。。");
+            MyPrint( "窗口内容改变啦。。。");
             if (isRedPackWindows) {
                 String className = event.getClassName().toString();
-                Log.i("==>", "className:" + className);
+                MyPrint( "className:" + className);
                 AccessibilityNodeInfo node = event.getSource();
+                //AccessibilityNodeInfo node = getRootInActiveWindow();
                 intoRedPackWindows(node);
             }
 
+        }
+        else if (eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
+            MyPrint( "TYPE_VIEW_SCROLLED");
+            AccessibilityNodeInfo node = getRootInActiveWindow();
+            intoRedPackWindows(node);
         }
     }
 
@@ -122,7 +190,7 @@ public class RedPacketService extends AccessibilityService {
         for (int i = 0; i < rootNode.getChildCount(); i++) {
             AccessibilityNodeInfo node = rootNode.getChild(i);
             if ("android.widget.Button".equals(node.getClassName())) {
-                Log.i("openRedPacket==>", "领取红包。。。。。。。。。");
+                MyPrint( "领取红包。。。。。。。。。");
                 node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 return true;
             }
@@ -134,23 +202,23 @@ public class RedPacketService extends AccessibilityService {
     //点击红包
     private boolean checkRedPackage(AccessibilityNodeInfo node)
     {
-        String TAG = "checkRedPackage ===> ";
+        //String TAG = "checkRedPackage ===> ";
         if (node == null)
         {
             return false;
         }
-        Log.i(TAG, "child widget----------------------------" + node.getClassName());
-        Log.i(TAG, "ClassName:" + node.getClassName());
-        Log.i(TAG, "Class:" + node.getClass().toString());
-        Log.i(TAG, "Text：" + node.getText());
-        Log.i(TAG, "windowId:" + node.getWindowId());
+        MyPrint( "child widget----------------------------");
+        MyPrint( "ClassName:" + node.getClassName());
+        MyPrint( "Class:" + node.getClass().toString());
+        MyPrint( "Text：" + node.getText());
+        MyPrint( "windowId:" + node.getWindowId());
 
         AccessibilityNodeInfo parent = node.getParent();
         //while循环,遍历"领取红包"的各个父布局，直至找到可点击的为止
         while (parent != null) {
             if (parent.isClickable()) {
                 //模拟点击
-                Log.i(TAG, "点击！！！");
+                MyPrint( "点击！！！");
                 parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 //isOpenRP用于判断该红包是否点击过
                 return true;
@@ -161,40 +229,43 @@ public class RedPacketService extends AccessibilityService {
     }
 
     //找到红包项
-    public void recycle(AccessibilityNodeInfo info) {
-        String TAG = "recycle ===> ";
+    public void recycle(int rootNum ,AccessibilityNodeInfo info) {
+        //String TAG = "recycle ===> ";
         if (isReturn) return ;
 
-        Log.i(TAG, "输入：isPackRed:" + isPackRed + "; isNoRecv:" + isNoRecv);
+        MyPrint( "[" + rootNum + "]输入：isPackRed:" + isPackRed + "; isNoRecv:" + isNoRecv);
 
         if (info.getChildCount() == 0) {
-            Log.i(TAG, "child widget----------------------------" + info.getClassName());
-            Log.i(TAG, "ClassName:" + info.getClassName());
-            Log.i(TAG, "Class:" + info.getClass().toString());
-            Log.i(TAG, "Text：" + info.getText());
-            Log.i(TAG, "windowId:" + info.getWindowId());
+            MyPrint( "child widget----------------------------");
+            MyPrint( "ClassName:" + info.getClassName());
+            MyPrint( "Class:" + info.getClass().toString());
+            MyPrint( "Text：" + info.getText());
+            MyPrint( "windowId:" + info.getWindowId());
             if (info.getText() != null)
             {
                 if (info.getText().toString().equals("微信红包"))
                     isPackRed = true;
                 if (info.getText().toString().equals("领取红包"))
                     isNoRecv = true;
-                Log.i(TAG, "比较结果(isPackRed:" + isPackRed + "; isNoRecv:" + isNoRecv);
+                MyPrint( "比较结果(isPackRed:" + isPackRed + "; isNoRecv:" + isNoRecv);
                 if ((isPackRed == true) && (isNoRecv == true))
                 {
-                    Log.i(TAG, "退出程序。。。。。。。。。。。");
+                    MyPrint( "退出程序。。。。。。。。。。。");
                     isReturn = true;
                     redPackageNode = info;
                 }
             }
         } else {
-            for (int i = 0; i < info.getChildCount(); i++) {
+            rootNum ++ ;
+            for (int i = info.getChildCount() -1; i>=0; i--) {
                 if(info.getChild(i)!=null){
-                    Log.i(TAG, "再次查找。。。");
-                    recycle(info.getChild(i));
+                    MyPrint( "[" + rootNum + "]再次查找(" + i +")。。。");
+                    recycle(rootNum,info.getChild(i));
                 }
             }
         }
+        rootNum --;
+        MyPrint( "[" + rootNum + "]查完！！！");
         return;
     }
 
@@ -237,54 +308,95 @@ public class RedPacketService extends AccessibilityService {
         service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG);
     }
 
+    private void MyPrint(String str)
+    {
+        if (!EnableDebug) return;
+        String TAG = "myPrint:";
+        Log.i(TAG,  str );
+    }
+    
     public void intoRedPackWindows(AccessibilityNodeInfo node)
     {
-        String TAG = "intoRedPackWindows";
+        //String TAG = "intoRedPackWindows";
         isReturn = false;
         redPackageNode = null;
         isPackRed = false;
         isNoRecv = false;
 
-        recycle(node);
+        recycle(1,node);
         //找到红包
         if (redPackageNode != null)
         {
             if (checkRedPackage(redPackageNode))
             {
-                Log.d(TAG, "进入了“开”界面。。。" );
+                MyPrint( "进入了“开”界面。。。" );
                 return;
             }
         }
         else
         {
-            Log.i(TAG, "未查询到，继续查询。。。");
+            MyPrint( "未查询到，继续查询。。。");
         }
     }
 
     public class MyThread extends Thread {
         //继承Thread类，并改写其run方法
-        private final static String TAG = "My Thread ===> ";
+        //private final static //String TAG = "My Thread ===> ";
         public void run(){
-            Log.d(TAG, "run");
+            MyPrint( "run");
             int i = 0;
             while(true)
             {
                 i++;
-                Log.d(TAG, "run----" + i );
+                MyPrint( "run----" + i );
                 //获取当前聊天页面的根布局
                 AccessibilityNodeInfo rootNode = getRootInActiveWindow();
                 if (rootNode == null || rootNode.getPackageName() == null)
                     continue;
 
-                Log.d(TAG, "packageName:" + rootNode.getPackageName().toString() );
+                MyPrint( "packageName:" + rootNode.getPackageName().toString() );
                 if (!rootNode.getPackageName().toString().equals("com.tencent.mm"))
                     return;
                 //Toast.makeText(this, "开始找红包", Toast.LENGTH_SHORT).show();
                 //开始找红包
                 isReturn = false;
-
-
             }
         }
     }
+
+    public class UpDownThread extends Thread {
+        //继承Thread类，并改写其run方法
+        //private final static //String TAG = "My Thread ===> ";
+        public void run(){
+            MyPrint( "run");
+            while(true)
+            {
+                //获取当前聊天页面的根布局
+                AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+                if (rootNode == null || rootNode.getPackageName() == null)
+                    continue;
+
+                MyPrint( "packageName:" + rootNode.getPackageName().toString() );
+                if (!rootNode.getPackageName().toString().equals("com.tencent.mm"))
+                    return;
+
+                rootNode.performAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD);
+                try {
+                    Thread.sleep(2000);//延时1s
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                rootNode.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
+                try {
+                    Thread.sleep(2000);//延时1s
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+
 }

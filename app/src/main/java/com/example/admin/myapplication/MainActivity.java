@@ -7,23 +7,39 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
-
+        CheckBox checkbox = (CheckBox)findViewById(R.id.checkBox);
+        checkbox.setChecked(RedPacketService.EnableDebug);
+        //给CheckBox设置事件监听
+        checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+                // TODO Auto-generated method stub
+                if(isChecked){
+                    RedPacketService.EnableDebug = true;
+                }else{
+                    RedPacketService.EnableDebug = false;
+                }
+            }
+        });
         //Log.i("TAG", "时间：" + getScreenOffTime());
         //setScreenOffTime(60000);
        // Log.i("TAG", "时间：" + getScreenOffTime());
 
+        //打开知能辅助界面
         if (!isAccessibilitySettingsOn(this)) {
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            startActivity(intent);
+           Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+           startActivity(intent);
         }
     }
 
